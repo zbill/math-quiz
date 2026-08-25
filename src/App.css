@@ -1,0 +1,664 @@
+/* ===== 布局 ===== */
+.app-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.page-with-bar {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+.content-area {
+  flex: 1;
+}
+
+/* ===== 选择类（chip）===== */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.chip {
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  color: var(--ink-2);
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.chip:active {
+  transform: scale(0.96);
+}
+.chip.on {
+  background: var(--brand-weak);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.mode-chip {
+  flex: 1;
+  text-align: left;
+  padding: 14px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  color: var(--ink-2);
+}
+.mode-chip.on {
+  background: var(--brand-weak);
+  border-color: var(--brand);
+  color: var(--ink);
+}
+.mode-chip.on .brand-tag {
+  color: var(--brand);
+}
+
+/* ===== 输入 ===== */
+.input {
+  width: 100%;
+  padding: 14px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--line);
+  font-size: 16px;
+  background: #f9fafc;
+  color: var(--ink);
+  outline: none;
+}
+.input:focus {
+  border-color: var(--brand);
+  background: #fff;
+}
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+/* ===== 列表按钮 ===== */
+.row-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 16px;
+  background: #f9fafc;
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-size: 16px;
+}
+.row-btn:active {
+  background: var(--brand-weak);
+}
+.link-btn {
+  background: none;
+  color: var(--brand);
+  padding: 10px;
+  font-size: 15px;
+}
+.hint {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* ===== 开关 ===== */
+.switch {
+  width: 52px;
+  height: 30px;
+  border-radius: 30px;
+  background: #d5dae5;
+  position: relative;
+  padding: 0;
+  transition: background 0.2s;
+}
+.switch.on {
+  background: var(--brand);
+}
+.switch .knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: left 0.2s;
+}
+.switch.on .knob {
+  left: 25px;
+}
+
+/* ===== 答题界面 ===== */
+.quiz-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+.quiz-top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  padding-top: calc(env(safe-area-inset-top) + 10px);
+  background: var(--bg);
+}
+.hide-desktop {
+  display: none;
+}
+.exit-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+}
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 8px;
+  background: #e7eaf3;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--brand);
+  border-radius: 8px;
+  transition: width 0.3s;
+}
+.q-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.timer {
+  margin: 4px 16px 0;
+  padding: 8px 14px;
+  background: var(--brand-weak);
+  color: var(--brand);
+  border-radius: 30px;
+  font-weight: 700;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.timer.danger {
+  background: var(--bad-weak);
+  color: var(--bad);
+  animation: pulse 0.8s infinite;
+}
+
+/* 题目区：占上半屏 */
+.head-divide {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 24px;
+}
+.expression {
+  font-size: clamp(44px, 13vw, 72px);
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--ink);
+  text-align: center;
+  line-height: 1.1;
+}
+.expression .op {
+  color: var(--brand);
+  font-weight: 800;
+  margin: 0 10px;
+}
+.expression .eq {
+  color: var(--ink-3);
+}
+
+/* 答案区：占下半屏，不外溢 */
+.tail-divide {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 14px 20px calc(12px + var(--safe-b));
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  overflow: hidden;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.option {
+  padding: 20px;
+  border-radius: 18px;
+  background: #f2f4fa;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
+  transition: all 0.15s;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.04) inset;
+}
+.option:active {
+  transform: scale(0.97);
+}
+.option.right {
+  background: var(--good);
+  color: #fff;
+  animation: pop 0.35s;
+}
+.option.wrong {
+  background: var(--bad);
+  color: #fff;
+  animation: shake 0.4s;
+}
+.option.dim {
+  opacity: 0.4;
+}
+
+/* 反馈条 */
+.feedback-banner {
+  margin: 0 16px 10px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  animation: dropin 0.3s;
+}
+.feedback-banner.ok {
+  background: var(--good-weak);
+  color: var(--good);
+}
+.feedback-banner.no {
+  background: var(--bad-weak);
+  color: var(--bad);
+}
+.feedback-banner.miss {
+  background: #fef6e7;
+  color: var(--warn);
+}
+
+/* 反馈区揭示 */
+.feedback-area {
+  align-items: center;
+}
+.reveal-label {
+  font-size: 14px;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+}
+.reveal-answer {
+  font-size: 64px;
+  font-weight: 800;
+  color: var(--brand);
+}
+.reveal-answer.big {
+  color: var(--good);
+  font-size: 72px;
+}
+.reveal.wrong .reveal-answer {
+  color: var(--bad);
+}
+.next-btn {
+  margin-top: 24px;
+  padding: 16px 28px;
+  border-radius: 16px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 8px 18px rgba(76, 110, 245, 0.3);
+}
+
+/* 数字键盘（填答案） */
+.keypad-area {
+  justify-content: flex-start;
+}
+.input-display {
+  min-height: 54px;
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--brand);
+  text-align: center;
+  letter-spacing: 6px;
+  border-bottom: 3px solid var(--line);
+  padding: 6px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 10px;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+.num-key {
+  padding: 0;
+  border-radius: 16px;
+  background: #f2f4fa;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.num-key.enter.full {
+  grid-column: 1 / -1;
+}
+.num-key:active {
+  background: var(--brand-weak);
+}
+.num-key.enter {
+  background: var(--good);
+  color: #fff;
+}
+.num-key:disabled {
+  opacity: 0.4;
+}
+
+/* ===== 结果页 ===== */
+.result-hero {
+  background: linear-gradient(135deg, #4c6ef5, #7048e8);
+  color: #fff;
+  border-radius: 22px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 14px 30px rgba(76, 110, 245, 0.3);
+}
+.result-score {
+  font-size: 72px;
+  font-weight: 800;
+  line-height: 1;
+}
+.result-score .pct {
+  font-size: 32px;
+  font-weight: 700;
+}
+.result-stars {
+  margin-top: 8px;
+  font-size: 18px;
+}
+.result-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+.stat {
+  text-align: center;
+}
+.stat-val {
+  font-size: 26px;
+  font-weight: 800;
+}
+.stat-val.good {
+  color: #b8f2cc;
+}
+.stat-val.bad {
+  color: #ffc9c4;
+}
+.stat-val.ink {
+  color: #e5dbff;
+}
+.stat-label {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.error-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 4px;
+}
+.error-op {
+  font-weight: 600;
+}
+.error-rate {
+  font-weight: 700;
+  color: var(--bad);
+}
+.correction {
+  margin-top: 8px;
+  background: var(--bad-weak);
+  padding: 10px 14px;
+  border-radius: 12px;
+  color: var(--bad);
+  text-align: center;
+  font-weight: 600;
+}
+.right-answer {
+  font-size: 18px;
+}
+
+/* ===== 统计页 ===== */
+.tabs {
+  display: flex;
+  gap: 8px;
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow: var(--shadow);
+  margin-top: 12px;
+}
+.tabs button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: none;
+}
+.tabs button.on {
+  background: var(--brand);
+  color: #fff;
+}
+
+.kv-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.kv {
+  background: #f8f9fc;
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+}
+.kv-k {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.kv-v {
+  font-size: 24px;
+  font-weight: 800;
+  margin-top: 4px;
+  color: var(--ink);
+}
+.kv-v.good {
+  color: var(--good);
+}
+.kv-v.bad {
+  color: var(--bad);
+}
+
+.op-perf {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+.op-name {
+  width: 50px;
+  font-weight: 600;
+}
+.op-bar {
+  flex: 1;
+  height: 10px;
+  background: #eef0f6;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.op-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4c6ef5, #7048e8);
+  border-radius: 10px;
+  transition: width 0.4s;
+}
+.op-rate {
+  width: 44px;
+  text-align: right;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+.day-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.day-row:last-child {
+  border-bottom: none;
+}
+.day-date {
+  font-weight: 600;
+}
+.day-sub {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+.day-rate {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--brand);
+}
+
+/* ===== 错题 ===== */
+.wrong-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.wrong-expr {
+  font-size: 18px;
+  font-weight: 600;
+}
+.wrong-wrong {
+  font-size: 12px;
+  color: var(--bad);
+  background: var(--bad-weak);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* ===== 解锁设置 ===== */
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+}
+.unlock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.unlock-row:last-child {
+  border-bottom: none;
+}
+.unlock-badge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.unlock-badge.on {
+  background: var(--good-weak);
+  color: var(--good);
+}
+.unlock-progress {
+  font-size: 13px;
+  color: var(--brand);
+  font-weight: 600;
+}
+.unlock-progress.muted {
+  color: var(--ink-3);
+}
+
+/* ===== 空状态 ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  color: var(--ink-3);
+}
+
+/* ===== 动效 ===== */
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+@keyframes dropin {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ===== 桌面美化 ===== */
+@media (min-width: 768px) {
+  #root {
+    max-width: 460px;
+    border-radius: 24px;
+    margin: 16px auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+  }
+  .hide-desktop {
+    display: flex;
+  }
+}

@@ -1,0 +1,149 @@
+:root {
+  --bg: #f5f6fb;
+  --surface: #ffffff;
+  --ink: #1c2333;
+  --ink-2: #5a6480;
+  --ink-3: #8b93ab;
+  --line: #e7eaf3;
+  --brand: #4c6ef5;
+  --brand-weak: #edf0ff;
+  --good: #28b463;
+  --good-weak: #eafaf0;
+  --bad: #e74c3c;
+  --bad-weak: #fdedec;
+  --warn: #f39c12;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 8px 24px rgba(28, 35, 51, 0.06);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --h-display: 44px;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue',
+    'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+#root {
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+}
+
+/* ====== 顶部栏 ====== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--h-display);
+  padding: 0 16px;
+  padding-top: env(safe-area-inset-top);
+  background: rgba(245, 246, 251, 0.9);
+  backdrop-filter: blur(8px);
+}
+.topbar .title {
+  font-size: 17px;
+  font-weight: 700;
+}
+.topbar .user {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.big-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--radius);
+  font-size: 18px;
+  font-weight: 600;
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(76, 110, 245, 0.35);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.big-btn:active {
+  transform: scale(0.97);
+}
+.big-btn.ghost {
+  background: var(--surface);
+  color: var(--brand);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+}
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.group-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin: 6px 2px 10px;
+}
+
+/* ====== 底部栏 ====== */
+.tabbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding-bottom: var(--safe-b);
+}
+.tabbar button {
+  flex: 1;
+  padding: 10px 4px 12px;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink-3);
+  font-size: 11px;
+}
+.tabbar button.active {
+  color: var(--brand);
+}
+.tabbar .ico {
+  width: 22px;
+  height: 22px;
+}
+
+.page {
+  padding: 8px 16px calc(88px + var(--safe-b));
+}
+.page.flat {
+  padding-bottom: 24px;
+}
+
+.spacer {
+  height: 16px;
+}
