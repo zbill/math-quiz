@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { userStore } from '../lib/store';
 import { Icon } from '../components/Icon';
+import { syncPull } from '../lib/cloud';
 
 export default function LoginScreen({ onLogin }) {
   const [users, setUsers] = useState(userStore.list());
@@ -14,6 +15,18 @@ export default function LoginScreen({ onLogin }) {
   const [loginErr, setLoginErr] = useState('');
 
   const refresh = () => setUsers(userStore.list());
+
+  // 进入登录页时拉取云端用户档案（仅档案，不涉及具体用户数据），
+  // 让换设备也能看到云端已有的使用者。失败则静默回退本地。
+  useEffect(() => {
+    let mounted = true;
+    syncPull().then(() => {
+      if (mounted) setUsers(userStore.list());
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // 新建使用者：密码必填
   const create = () => {

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getRules, GRADE_OPTIONS, SEMESTERS } from '../lib/gradeTemplates';
 import { makeQuestionSet, upgradeSpec } from '../lib/questionEngine';
 import { Icon } from '../components/Icon';
+import { settingsStore, userStore } from '../lib/store';
 
 const COUNT_CHOICES = [10, 20, 30, 50];
 
@@ -21,21 +22,36 @@ const OP_GROUPS = [
   { key: 'muldiv', symbol: '×÷', label: '乘除混合', ops: ['mul', 'div'] },
   { key: 'chainAddSub', symbol: '+−', label: '连加连减', chain: 'addsub' },
   { key: 'chainMulDiv', symbol: '×÷', label: '连乘连除', chain: 'muldiv' },
+  { key: 'chainMixed', symbol: '+−×÷', label: '四则连算', chain: 'mixed' },
 ];
 
 const CHAIN = {
   chainAddSub: { chain: 'addsub', maxNum: 20 },
   chainMulDiv: { chain: 'muldiv', maxNum: 12 },
+  chainMixed: { chain: 'mixed', maxNum: 12 },
 };
 
 export default function SetupScreen({ user, onStart, onNeedUser }) {
-  const [mode, setMode] = useState('grade');
-  const [grade, setGrade] = useState(1);
-  const [semester, setSemester] = useState(1);
-  const [count, setCount] = useState(10);
+  // 初始化：优先从「用户档案（User对象上的grade/semester/mode）」取；
+  // 如用户档案没有或未设置，再看 settingsStore 的用户偏好。
+  const initial = (() => {
+    const userProf = user && typeof user === 'object' ? user : {};
+    const storedPrefs = user ? settingsStore.userPrefs(user.id) : {};
+    const mode = userProf.mode || storedPrefs.mode || 'grade';
+    const grade = Number(userProf.grade) || Number(storedPrefs.grade) || 1;
+    const semester = Number(userProf.semester) || Number(storedPrefs.semester) || 1;
+    const count = Number(storedPrefs.count) || 10;
+    const opGroup = storedPrefs.opGroup || 'all';
+    return { mode, grade, semester, count, opGroup };
+  })();
+
+  const [mode, setMode] = useState(initial.mode);
+  const [grade, setGrade] = useState(initial.grade);
+  const [semester, setSemester] = useState(initial.semester);
+  const [count, setCount] = useState(initial.count);
 
   // 运算类型（全局）
-  const [opGroup, setOpGroup] = useState('all');
+  const [opGroup, setOpGroup] = useState(initial.opGroup);
   const [customOps, setCustomOps] = useState([]);
 
   // 自由模式下数字范围
@@ -50,6 +66,15 @@ export default function SetupScreen({ user, onStart, onNeedUser }) {
 
   // 挑战模式：约10%题目难度上升一个档次
   const [challenge, setChallenge] = useState(false);
+
+  // 每次用户或选择变更时，同步写入 user档案 + settingsStore（两套固定）
+  useEffect(() => {
+    if (!user) return;
+    const patch = { mode, grade, semester };
+    settingsStore.userPrefs(user.id, patch);
+    userStore.patch(user.id, patch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, grade, semester, user?.id]);
 
   const isCustom = opGroup === 'custom';
 

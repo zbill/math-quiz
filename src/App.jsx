@@ -37,7 +37,7 @@ export default function App() {
   // 打开应用时若有会话，先拉取云端最新状态再刷新界面
   useEffect(() => {
     if (!user) return;
-    syncPull().then(() => {
+    syncPull(user.id).then(() => {
       const u = userStore.get(user.id);
       if (u) setUser(u);
       setUnlockMap(unlockStore.all(user.id));
@@ -48,7 +48,7 @@ export default function App() {
   const login = async (id) => {
     sessionStore.login(id);
     // 登录时先拉云端最新状态，覆盖本地
-    await syncPull();
+    await syncPull(id);
     const u = userStore.get(id);
     setUser(u);
     setUnlockMap(unlockStore.all(id));
@@ -56,7 +56,7 @@ export default function App() {
   };
 
   const logout = () => {
-    syncPush(); // 退出前推送最新状态到云端
+    syncPush(user.id); // 退出前推送最新状态到云端
     sessionStore.logout();
     setUser(null);
     setTab('login');
@@ -117,7 +117,7 @@ export default function App() {
     });
     // 点叉中途退出(early)时，回到出题页而不是进结果页
     setTab(early ? 'setup' : 'result');
-    syncPush(); // 答题结束，推送最新成绩/解锁进度到云端
+    syncPush(user.id); // 答题结束，推送最新成绩/解锁进度到云端
   };
 
   const reviewWrong = () => {

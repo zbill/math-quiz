@@ -3,6 +3,33 @@
 const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
+// 小数生成与精度修正：按 decimalPlaces 返回一个"整数倍 10^-dp"的浮点数
+function makeDecimal({ min, max, dp }) {
+  const factor = Math.pow(10, dp);
+  const mi = Math.ceil(min * factor);
+  const ma = Math.floor(max * factor);
+  if (ma <= mi) return Math.round(max * factor) / factor;
+  return randInt(mi, ma) / factor;
+}
+function roundForOp(v, dp) {
+  if (dp <= 0) return v;
+  const f = Math.pow(10, dp);
+  return Math.round(v * f) / f;
+}
+
+// 格式化数字（避免 0.1 + 0.2 = 0.30000000000000004 的展示问题；并去掉末尾多余 0）
+function fmtNum(v, dp) {
+  if (typeof v !== 'number') return String(v);
+  if (!Number.isFinite(v)) return String(v);
+  if (dp > 0) {
+    const f = Math.pow(10, dp);
+    const fixed = (Math.round(v * f) / f).toFixed(dp);
+    // 去掉末尾多余的 0
+    return fixed.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+  }
+  return String(Math.round(v));
+}
+
 // 是否整十/整百控制
 function applyMultiples(spec, op) {
   const step = spec.multiples10 ? 10 : spec.multiples100 ? 100 : 1;
@@ -11,9 +38,50 @@ function applyMultiples(spec, op) {
 
 // 生成一对数并计算，返回 {a, b, answer}
 function genOperands(spec) {
-  const { type, aMin, aMax, bMin, bMax } = spec;
+  const { type, aMin, aMax, bMin, bMax, decimalPlaces: dp = 0 } = spec;
   const step = applyMultiples(spec, type);
   const aStep = spec.multiples10 || spec.multiples100 ? step : 1;
+
+  // 小数：用整数倍 10^dp 生成，确保 a、b、答案的显示精度互相对得上
+  if (dp > 0) {
+    const scale = Math.pow(10, dp);
+    const toInt = (v) => Math.round(v * scale);
+    if (type === 'add') {
+      const a = randInt(Math.max(0, toInt(aMin)), toInt(aMax)) / scale;
+      const b = randInt(Math.max(0, toInt(bMin)), toInt(bMax)) / scale;
+      return { a, b, answer: a + b, opDp: dp, ansDp: dp };
+    }
+    if (type === 'sub') {
+      let a = randInt(Math.max(0, toInt(aMin)), toInt(aMax)) / scale;
+      let b = randInt(Math.max(0, toInt(bMin)), toInt(bMax)) / scale;
+      if (a < b) [a, b] = [b, a];
+      return { a, b, answer: a - b, opDp: dp, ansDp: dp };
+    }
+    if (type === 'mul') {
+      // a、b 各 dp 位小数，积至多 2*dp 位
+      const a = randInt(Math.max(1, toInt(aMin)), toInt(aMax)) / scale;
+      const b = randInt(Math.max(1, toInt(bMin)), toInt(bMax)) / scale;
+      return { a, b, answer: a * b, opDp: dp, ansDp: dp * 2 };
+    }
+    if (type === 'div') {
+      // 用整数整除保证：a = b*商 ，显示 a/b 正好等于整数商，绝不出现对不上的情况
+      const aMinInt = toInt(aMin);
+      const aMaxInt = toInt(aMax);
+      let guard = 80;
+      while (guard--) {
+        const bInt = randInt(Math.max(1, toInt(bMin)), Math.max(1, toInt(bMax)));
+        const qMin = Math.max(1, Math.ceil(aMinInt / bInt));
+        const qMax = Math.max(1, Math.floor(aMaxInt / bInt));
+        if (qMax < qMin) continue;
+        const q = randInt(qMin, qMax);
+        const aInt = q * bInt;
+        return { a: aInt / scale, b: bInt / scale, answer: q, opDp: dp, ansDp: 0 };
+      }
+      const bInt = randInt(Math.max(1, toInt(bMin)), Math.max(1, toInt(bMax)));
+      const q = Math.max(1, Math.floor(aMaxInt / bInt));
+      return { a: (q * bInt) / scale, b: bInt / scale, answer: q, opDp: dp, ansDp: 0 };
+    }
+  }
 
   // 归一化范围和步长
   const normMin = (v, st) => Math.ceil(v / st) * st;
@@ -85,12 +153,53 @@ const SYMBOL = { add: '+', sub: '−', mul: '×', div: '÷' };
 // 生成一个是链式的题：2步运算、3个操作数，保证中间结果非负、除法整除、结果非负
 function makeChainQuestion(spec) {
   const { maxNum, minNum = 1, chain, type } = spec;
-  // chain: 'addsub' | 'muldiv'
+  // chain: 'addsub' | 'muldiv' | 'mixed'(四则连算)
   const isMulDiv = chain === 'muldiv';
+  const isMixed = chain === 'mixed';
   let ops, a, b, c, mid, answer;
   let guard = 80;
   while (guard--) {
-    if (isMulDiv) {
+    if (isMixed) {
+      // 四则连算：加减 与 乘除 混合，2步3个数，用括号标明先后
+      const n = spec.maxNum ?? 12;
+      const hiFirst = Math.random() < 0.5; // 先乘除部分，再加减部分
+      if (hiFirst) {
+        // ( a × b ) + c  或  ( a ÷ b ) + c ... a/b 是乘除组，c 是加减组
+        const hi = Math.random() < 0.5 ? 'mul' : 'div';
+        let lo = Math.random() < 0.5 ? 'add' : 'sub';
+        let x, y, md;
+        if (hi === 'mul') {
+          x = randInt(1, n); y = randInt(1, n); md = x * y;
+        } else {
+          // a = q × b，商为 q（原取到的数），b 为乘数
+          const q = randInt(1, n);
+          const b_ = randInt(1, n);
+          x = q * b_;
+          y = b_;
+          md = q;
+        }
+        const z = randInt(1, n);
+        if (lo === 'add') { mid = md; answer = md + z; c = z; }
+        else { mid = md; answer = md - z; if (answer < 0) { answer = md + z; lo = 'add'; } c = z; }
+        a = x; b = y; ops = [hi, lo];
+        // 存显示顺序：乘除部分加括号
+      } else {
+        // ( a + b ) × c  或  ( a − b ) × c
+        const lo = Math.random() < 0.5 ? 'add' : 'sub';
+        const hi = Math.random() < 0.5 ? 'mul' : 'div';
+        let x, y, m;
+        if (lo === 'add') { x = randInt(1, n); y = randInt(1, n); m = x + y; }
+        else { x = randInt(2, n); y = randInt(1, x - 1); m = x - y; }
+        if (hi === 'mul') {
+          const z = Math.max(1, Math.min(n, Math.floor(60 / Math.max(1, m))));
+          mid = m; answer = m * z; c = z;
+        } else {
+          const z = Math.max(1, Math.min(n, divisorsOf(m, 1, Math.min(n, m))[0] || 1));
+          mid = m; answer = m / z; c = z;
+        }
+        a = x; b = y; ops = [lo, hi]; // 显示顺序：先括号组
+      }
+    } else if (isMulDiv) {
       // 数值范围：连乘连除用较小的数，结果一般较大；用 maxNum=20 够
       const n = spec.maxNum ?? 12;
       if (Math.random() < 0.5) {
@@ -142,22 +251,27 @@ function makeChainQuestion(spec) {
     }
     break;
   }
-  if (!ops) ops = isMulDiv ? ['mul', 'mul'] : ['add', 'add'];
+  if (!ops) ops = isMixed ? ['add', 'mul'] : isMulDiv ? ['mul', 'mul'] : ['add', 'add'];
   if (answer === undefined) {
-    if (isMulDiv) { a = 3; b = 2; c = 2; answer = 3; ops = ['mul', 'div']; mid = 6; }
+    if (isMixed) { a = 3; b = 2; mid = 6; c = 4; answer = 10; ops = ['mul', 'add']; }
+    else if (isMulDiv) { a = 3; b = 2; c = 2; answer = 3; ops = ['mul', 'div']; mid = 6; }
     else { a = 3; b = 2; answer = 1; mid = 5; ops = ['add', 'sub']; c = 4; }
   }
   const options = distractors(answer).sort(() => Math.random() - 0.5);
+  // 混合连算加括号，让两段一目了然：如 ( 3 × 4 ) + 5
+  const expr = isMixed
+    ? `( ${a} ${SYMBOL[ops[0]]} ${b} ) ${SYMBOL[ops[1]]} ${c}`
+    : `${a} ${SYMBOL[ops[0]]} ${b} ${SYMBOL[ops[1]]} ${c}`;
   return {
     chain: true,
-    chainType: isMulDiv ? 'muldiv' : 'addsub',
+    chainType: isMixed ? 'mixed' : isMulDiv ? 'muldiv' : 'addsub',
     a, b, c, mid,
-    op: isMulDiv ? 'chainMulDiv' : 'chainAddSub',
+    op: isMixed ? 'chainMixed' : isMulDiv ? 'chainMulDiv' : 'chainAddSub',
     symbol: '…',
     ops,
     answer,
     options,
-    expression: `${a} ${SYMBOL[ops[0]]} ${b} ${SYMBOL[ops[1]]} ${c}`,
+    expression: expr,
     spec,
   };
 }
@@ -177,15 +291,20 @@ export function makeQuestion(spec) {
   let o;
   let guard = 40;
   do { o = genOperands(spec); guard--; } while (guard > 0 && !o.answer);
-  const options = distractors(o.answer).sort(() => Math.random() - 0.5);
+  const opDp = o.opDp ?? 0;
+  const ansDp = o.ansDp ?? opDp;
+  const aStr = fmtNum(o.a, opDp);
+  const bStr = fmtNum(o.b, opDp);
+  const ansStr = fmtNum(o.answer, ansDp);
+  const options = distractors(o.answer).map((v) => fmtNum(v, ansDp)).sort(() => Math.random() - 0.5);
   return {
     a: o.a,
     b: o.b,
     op: spec.type,
     symbol: SYMBOL[spec.type] || spec.type,
-    answer: o.answer,
+    answer: ansStr,
     options,
-    expression: `${o.a} ${SYMBOL[spec.type]} ${o.b}`,
+    expression: `${aStr} ${SYMBOL[spec.type]} ${bStr}`,
   };
 }
 

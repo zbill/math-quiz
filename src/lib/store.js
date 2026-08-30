@@ -45,8 +45,25 @@ export const userStore = {
   get(id) {
     return this.list().find((u) => u.id === id) || null;
   },
+  patch(id, partial) {
+    const list = this.list();
+    const i = list.findIndex((u) => u.id === id);
+    if (i < 0) return null;
+    list[i] = { ...list[i], ...partial, updatedAt: Date.now() };
+    write(KEYS.users, list);
+    return list[i];
+  },
   create({ name, pin }) {
-    const user = { id: uid(), name, pin: pin || '', createdAt: Date.now() };
+    const user = {
+      id: uid(),
+      name,
+      pin: pin || '',
+      createdAt: Date.now(),
+      // 档案上也固定年级/学期/模式：设置页会同步写入
+      grade: 1,
+      semester: 1,
+      mode: 'grade',
+    };
     this.save(user);
     return user;
   },
@@ -238,31 +255,83 @@ export const settingsStore = {
   set(partial) {
     write(KEYS.settings, { ...this.get(), ...partial });
   },
+  // 按用户维度存取：记录每个用户最后一次的 年级/学期/模式
+  // 用法：settingsStore.getUserPrefs(userId) -> {grade, semester, mode, ops, qCount...}
+  userPrefs(userId, patch) {
+    const all = this.get();
+    const byUser = all.byUser || {};
+    if (!patch) return byUser[userId] || {};
+    byUser[userId] = { ...(byUser[userId] || {}), ...patch };
+    write(KEYS.settings, { ...all, byUser });
+    return byUser[userId];
+  },
 };
 
-// ============ 云同步辅助：整份状态导出/导入 ============
-// 云端把整份应用状态存为一个 JSON 文档，pull/push 时整体读写，实现多端同步。
-export function dumpState() {
+// ============ 云同步辅助（方式B：按用户分文档） ============
+// 云端布局：
+//   - 文档 users     ：所有用户档案（登录页列出全部使用者）
+//   - 文档 u_<uid>   ：单个用户的 答题/错题/统计/解锁/设置（用户隔离）
+// 本地仍按整份数组存储；导出/导入时按 userId 过滤、合并，保证互不串号。
+
+export function dumpProfiles() {
+  return read(KEYS.users, []);
+}
+
+// 导入用户档案：按 id 合并，云端字段覆盖本地同名用户，保留本地独有的用户
+export function loadProfiles(list) {
+  if (!Array.isArray(list) || list.length === 0) return;
+  const local = read(KEYS.users, []);
+  const map = new Map(local.map((u) => [u.id, u]));
+  list.forEach((cu) => {
+    const lu = map.get(cu.id);
+    map.set(cu.id, lu ? { ...lu, ...cu } : cu);
+  });
+  write(KEYS.users, Array.from(map.values()));
+}
+
+// 导出某个用户在整份本地状态中的子集
+export function dumpUserState(userId) {
   return {
-    users: read(KEYS.users, []),
-    records: read(KEYS.records, []),
-    wrongbook: read(KEYS.wrongBook, []),
-    statsDaily: read(KEYS.statsDaily, []),
-    unlock: read(KEYS.unlock, {}),
-    settings: read(KEYS.settings, {}),
+    records: read(KEYS.records, []).filter((r) => r.userId === userId),
+    wrongbook: read(KEYS.wrongBook, []).filter((w) => w.userId === userId),
+    statsDaily: read(KEYS.statsDaily, []).filter((s) => s.userId === userId),
+    unlock: read(KEYS.unlock, {})[userId] || {},
+    settings: (read(KEYS.settings, {}).byUser || {})[userId] ?? null,
   };
 }
 
-export function loadState(state) {
-  if (!state || typeof state !== 'object') return;
-  if (Array.isArray(state.users)) write(KEYS.users, state.users);
-  if (Array.isArray(state.records)) write(KEYS.records, state.records);
-  if (Array.isArray(state.wrongbook)) write(KEYS.wrongBook, state.wrongbook);
-  if (Array.isArray(state.statsDaily)) write(KEYS.statsDaily, state.statsDaily);
-  if (state.unlock && typeof state.unlock === 'object')
-    write(KEYS.unlock, state.unlock);
-  if (state.settings && typeof state.settings === 'object')
-    write(KEYS.settings, state.settings);
+// 把某个用户的云端子集合并进整份本地状态（先清该用户旧数据，再写入云端数据）
+export function loadUserState(userId, data) {
+  if (!data || typeof data !== 'object') return;
+
+  if (Array.isArray(data.records)) {
+    write(KEYS.records, [
+      ...read(KEYS.records, []).filter((r) => r.userId !== userId),
+      ...data.records,
+    ]);
+  }
+  if (Array.isArray(data.wrongbook)) {
+    write(KEYS.wrongBook, [
+      ...read(KEYS.wrongBook, []).filter((w) => w.userId !== userId),
+      ...data.wrongbook,
+    ]);
+  }
+  if (Array.isArray(data.statsDaily)) {
+    write(KEYS.statsDaily, [
+      ...read(KEYS.statsDaily, []).filter((s) => s.userId !== userId),
+      ...data.statsDaily,
+    ]);
+  }
+  if (data.unlock && typeof data.unlock === 'object') {
+    const all = read(KEYS.unlock, {});
+    all[userId] = data.unlock;
+    write(KEYS.unlock, all);
+  }
+  const settings = read(KEYS.settings, {});
+  const byUser = settings.byUser || {};
+  if (data.settings) byUser[userId] = data.settings;
+  else delete byUser[userId];
+  write(KEYS.settings, { ...settings, byUser });
 }
 
 export const newId = uid;

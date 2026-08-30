@@ -96,7 +96,14 @@ export default function QuizScreen({ questions, settings, unlockRatio, onUnlock,
   const trySubmit = (answer) => {
     if (phase !== 'answering') return;
     clearInterval(timerRef.current);
-    const kind = answer === q().answer ? 'correct' : 'wrong';
+    const norm = (v) => {
+      if (v === null || v === undefined || v === '') return '';
+      const s = String(v).trim();
+      if (!s) return '';
+      // 去掉整数部分前导 0（0.5 保留一个 0；0 不处理）
+      return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+    };
+    const kind = norm(answer) === norm(q().answer) ? 'correct' : 'wrong';
     const rec = makeRec(q(), answer, kind);
     setSelected(answer);
     pushRec(rec);
@@ -108,7 +115,7 @@ export default function QuizScreen({ questions, settings, unlockRatio, onUnlock,
 
   const checkInput = () => {
     if (inputStr === '' || phase !== 'answering') return;
-    trySubmit(Number(inputStr));
+    trySubmit(inputStr);
   };
 
   const next = () => {
@@ -163,12 +170,13 @@ export default function QuizScreen({ questions, settings, unlockRatio, onUnlock,
             <div className="input-display">{inputStr || '\u00a0'}</div>
             <div className="keypad">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
-                <button key={n} className="num-key" onClick={() => setInputStr((p) => (p.length < 5 ? p + n : p))}>
+                <button key={n} className="num-key" onClick={() => setInputStr((p) => (p.length < 10 ? p + n : p))}>
                   {n}
                 </button>
               ))}
+              <button className="num-key" onClick={() => setInputStr((p) => (p.length < 10 ? p + '.' : p))} disabled={inputStr.includes('.')}>·</button>
+              <button className="num-key" onClick={() => setInputStr((p) => (p.length < 10 ? p + '0' : p))}>0</button>
               <button className="num-key" onClick={() => setInputStr((p) => p.slice(0, -1))}>⌫</button>
-              <button className="num-key" onClick={() => setInputStr((p) => (p.length < 5 ? p + '0' : p))}>0</button>
               <button className="num-key" onClick={() => setInputStr('')}>清</button>
               <button className="num-key enter full" disabled={!inputStr} onClick={checkInput}>✓</button>
             </div>

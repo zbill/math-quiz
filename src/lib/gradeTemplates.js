@@ -20,80 +20,115 @@ export const OPS = {
 const RULES = {
   1: {
     1: [
-      { type: 'add', aMin: 1, aMax: 5, bMin: 1, bMax: 5 }, // 5以内
+      { type: 'add', aMin: 1, aMax: 5, bMin: 1, bMax: 5 },
       { type: 'sub', aMin: 1, aMax: 5, bMin: 1, bMax: 5 },
+      { type: 'mul', aMin: 1, aMax: 2, bMin: 1, bMax: 2 },
+      { type: 'div', aMin: 1, aMax: 2, bMin: 1, bMax: 2 },
     ],
     2: [
-      { type: 'add', aMin: 1, aMax: 9, bMin: 1, bMax: 9 }, // 10以内
+      { type: 'add', aMin: 1, aMax: 9, bMin: 1, bMax: 9 },
       { type: 'sub', aMin: 1, aMax: 9, bMin: 1, bMax: 9 },
-      { type: 'add', aMin: 10, aMax: 18, bMin: 1, bMax: 9, noCarry: true }, // 20以内不进位
+      { type: 'add', aMin: 10, aMax: 18, bMin: 1, bMax: 9, noCarry: true },
       { type: 'sub', aMin: 1, aMax: 9, bMin: 1, bMax: 9 },
+      { type: 'mul', aMin: 1, aMax: 3, bMin: 1, bMax: 3 },
+      { type: 'div', aMin: 1, aMax: 3, bMin: 1, bMax: 3 },
     ],
   },
   2: {
     1: [
       { type: 'add', aMin: 10, aMax: 18, bMin: 1, bMax: 9 },
       { type: 'sub', aMin: 11, aMax: 20, bMin: 1, bMax: 9 },
-      { type: 'add', aMin: 1, aMax: 50, bMin: 1, bMax: 50, multiples10: true }, // 整十数加减
+      { type: 'add', aMin: 1, aMax: 50, bMin: 1, bMax: 50, multiples10: true },
       { type: 'sub', aMin: 1, aMax: 50, bMin: 1, bMax: 50, multiples10: true },
+      { type: 'mul', aMin: 1, aMax: 5, bMin: 1, bMax: 5 },
+      { type: 'div', aMin: 1, aMax: 5, bMin: 1, bMax: 5 },
     ],
     2: [
-      { type: 'mul', aMin: 1, aMax: 9, bMin: 1, bMax: 9 }, // 表内乘法
-      { type: 'div', aMin: 1, aMax: 9, bMin: 1, bMax: 9 }, // 表内除法(用口诀)
+      { type: 'mul', aMin: 1, aMax: 9, bMin: 1, bMax: 9 },
+      { type: 'div', aMin: 1, aMax: 9, bMin: 1, bMax: 9 },
       { type: 'add', aMin: 10, aMax: 90, bMin: 10, bMax: 90, multiples10: true },
       { type: 'sub', aMin: 10, aMax: 90, bMin: 10, bMax: 90, multiples10: true },
     ],
   },
   3: {
     1: [
-      { type: 'mul', aMin: 10, aMax: 90, bMin: 2, bMax: 9 }, // 两位数×一位数
-      { type: 'div', aMin: 2, aMax: 9, bMin: 10, bMax: 90, divisorFirst: true }, // 整十/显著 除以一位数
+      { type: 'mul', aMin: 10, aMax: 90, bMin: 2, bMax: 9 },
+      { type: 'div', aMin: 2, aMax: 9, bMin: 10, bMax: 90, divisorFirst: true },
       { type: 'add', aMin: 100, aMax: 900, bMin: 100, bMax: 900, multiples100: true },
       { type: 'sub', aMin: 100, aMax: 900, bMin: 100, bMax: 900, multiples100: true },
     ],
     2: [
       { type: 'mul', aMin: 10, aMax: 90, bMin: 2, bMax: 9 },
       { type: 'div', aMin: 2, aMax: 9, bMin: 10, bMax: 80, divisorFirst: true },
-      { type: 'add', aMin: 100, aMax: 900, bMin: 100, bMax: 900 }, // 三位数加减
+      { type: 'add', aMin: 100, aMax: 900, bMin: 100, bMax: 900 },
       { type: 'sub', aMin: 200, aMax: 900, bMin: 100, bMax: 500 },
     ],
   },
   4: {
     1: [
-      { type: 'mul', aMin: 100, aMax: 900, bMin: 2, bMax: 9 }, // 三位数×一位数
+      { type: 'mul', aMin: 100, aMax: 900, bMin: 2, bMax: 9 },
       { type: 'div', aMin: 2, aMax: 9, bMin: 100, bMax: 900, divisorFirst: true },
-      { type: 'mul', aMin: 20, aMax: 90, bMin: 20, bMax: 90, multiples10: true }, // 几十×几十
+      { type: 'mul', aMin: 20, aMax: 90, bMin: 20, bMax: 90, multiples10: true },
+      { type: 'add', aMin: 100, aMax: 900, bMin: 100, bMax: 900 },
       { type: 'sub', aMin: 100, aMax: 900, bMin: 100, bMax: 500 },
     ],
     2: [
-      { type: 'mul', aMin: 10, aMax: 90, bMin: 11, bMax: 40 }, // 两位数×两位数(口算)
+      { type: 'mul', aMin: 10, aMax: 90, bMin: 11, bMax: 40 },
       { type: 'div', aMin: 2, aMax: 9, bMin: 20, bMax: 200, divisorFirst: true },
       { type: 'add', aMin: 100, aMax: 900, bMin: 100, bMax: 900 },
       { type: 'sub', aMin: 200, aMax: 999, bMin: 100, bMax: 700 },
+      // 四年级下：引入小数加减（一位小数）
+      { type: 'add', aMin: 0, aMax: 10, bMin: 0, bMax: 10, decimalPlaces: 1 },
+      { type: 'sub', aMin: 0, aMax: 10, bMin: 0, bMax: 10, decimalPlaces: 1 },
     ],
   },
   5: {
     1: [
-      { type: 'mul', aMin: 10, aMax: 90, bMin: 11, bMax: 40 }, // 小数乘法(一位小数×整数)
+      { type: 'mul', aMin: 10, aMax: 90, bMin: 11, bMax: 40 },
       { type: 'div', aMin: 2, aMax: 9, bMin: 10, bMax: 90, divisorFirst: true },
       { type: 'mul', aMin: 1, aMax: 9, bMin: 10, bMax: 90 },
+      { type: 'add', aMin: 100, aMax: 900, bMin: 100, bMax: 900 },
+      { type: 'sub', aMin: 200, aMax: 900, bMin: 100, bMax: 700 },
+      // 五年级上：小数加减 + 一位小数 × 整数
+      { type: 'add', aMin: 0, aMax: 10, bMin: 0, bMax: 10, decimalPlaces: 1 },
+      { type: 'sub', aMin: 0, aMax: 10, bMin: 0, bMax: 10, decimalPlaces: 1 },
+      { type: 'mul', aMin: 0, aMax: 10, bMin: 2, bMax: 9, decimalPlaces: 1 },
     ],
     2: [
       { type: 'add', aMin: 10, aMax: 99, bMin: 10, bMax: 99 },
       { type: 'sub', aMin: 20, aMax: 99, bMin: 10, bMax: 60 },
       { type: 'mul', aMin: 1, aMax: 9, bMin: 1, bMax: 9 },
+      { type: 'div', aMin: 2, aMax: 9, bMin: 4, bMax: 81, divisorFirst: true },
+      // 五年级下：小数乘除 + 两位小数加减
+      { type: 'add', aMin: 0, aMax: 10, bMin: 0, bMax: 10, decimalPlaces: 2 },
+      { type: 'sub', aMin: 0, aMax: 10, bMin: 0, bMax: 10, decimalPlaces: 2 },
+      { type: 'mul', aMin: 0, aMax: 10, bMin: 0, bMax: 10, decimalPlaces: 1 },
+      { type: 'div', aMin: 0, aMax: 10, bMin: 1, bMax: 9, decimalPlaces: 1 },
     ],
   },
   6: {
     1: [
       { type: 'mul', aMin: 10, aMax: 90, bMin: 10, bMax: 40 },
       { type: 'div', aMin: 2, aMax: 9, bMin: 40, bMax: 360, divisorFirst: true },
+      // 六年级纯加减：整数口算合适范围，不是超级大数
       { type: 'add', aMin: 100, aMax: 900, bMin: 100, bMax: 900 },
+      { type: 'sub', aMin: 200, aMax: 900, bMin: 100, bMax: 700 },
+      // 六年级上：分数/小数运算基础，这里接两位小数的加减乘除
+      { type: 'add', aMin: 0, aMax: 10, bMin: 0, bMax: 10, decimalPlaces: 2 },
+      { type: 'sub', aMin: 0, aMax: 10, bMin: 0, bMax: 10, decimalPlaces: 2 },
+      { type: 'mul', aMin: 0, aMax: 10, bMin: 1, bMax: 9, decimalPlaces: 2 },
+      { type: 'div', aMin: 0, aMax: 10, bMin: 1, bMax: 9, decimalPlaces: 2 },
     ],
     2: [
       { type: 'mul', aMin: 10, aMax: 99, bMin: 10, bMax: 40 },
       { type: 'div', aMin: 2, aMax: 9, bMin: 50, bMax: 450, divisorFirst: true },
+      { type: 'add', aMin: 100, aMax: 900, bMin: 100, bMax: 900 },
       { type: 'sub', aMin: 100, aMax: 999, bMin: 100, bMax: 600 },
+      // 六年级下：继续小数运算，两位/一位混合
+      { type: 'add', aMin: 0, aMax: 10, bMin: 0, bMax: 10, decimalPlaces: 2 },
+      { type: 'sub', aMin: 0, aMax: 10, bMin: 0, bMax: 10, decimalPlaces: 2 },
+      { type: 'mul', aMin: 0, aMax: 10, bMin: 0, bMax: 10, decimalPlaces: 1 },
+      { type: 'div', aMin: 0, aMax: 10, bMin: 1, bMax: 9, decimalPlaces: 1 },
     ],
   },
 };
